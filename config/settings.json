@@ -1,0 +1,10 @@
+{
+  "event_name": "NOVAdance 2027",
+  "eventtag": "NOVAdance27",
+  "base_url": "https://www.beposfdn.org",
+  "season_start": "2026-06-01",
+  "season_end": "2027-06-30",
+  "event_goal": 1100000,
+  "request_delay_seconds": 0.3,
+  "reconcile_tolerance": 1.0
+}

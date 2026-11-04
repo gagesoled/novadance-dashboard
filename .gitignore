@@ -1,0 +1,8 @@
+# Never commit raw BEPOS exports: they contain donor details and passwords.
+*.xlsx
+*.xls
+exports/
+raw/
+.env
+__pycache__/
+*.tmp

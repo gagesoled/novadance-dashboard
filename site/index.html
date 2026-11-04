@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVAdance Fundraising</title>
+<meta name="robots" content="noindex">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --series-1: #2a78d6;
+  --series-1-wash: rgba(42,120,214,0.10);
+  --goal: #52514e;
+  --good: #0ca30c; --good-text: #006300;
+  --warning: #fab219;
+  --seq-0: #f0efec; --seq-1: #cde2fb; --seq-2: #9ec5f4; --seq-3: #6da7ec;
+  --seq-4: #3987e5; --seq-5: #256abf; --seq-6: #184f95;
+  --track: #cde2fb;
+  --hover: rgba(11,11,11,0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --axis: #383835;
+    --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --series-1-wash: rgba(57,135,229,0.12);
+    --goal: #c3c2b7; --good-text: #0ca30c;
+    --seq-0: #262624; --seq-1: #0d366b; --seq-2: #104281; --seq-3: #184f95;
+    --seq-4: #256abf; --seq-5: #3987e5; --seq-6: #6da7ec;
+    --track: #184f95; --hover: rgba(255,255,255,0.05);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7;
+  --muted: #898781; --grid: #2c2c2a; --axis: #383835;
+  --border: rgba(255,255,255,0.10);
+  --series-1: #3987e5; --series-1-wash: rgba(57,135,229,0.12);
+  --goal: #c3c2b7; --good-text: #0ca30c;
+  --seq-0: #262624; --seq-1: #0d366b; --seq-2: #104281; --seq-3: #184f95;
+  --seq-4: #256abf; --seq-5: #3987e5; --seq-6: #6da7ec;
+  --track: #184f95; --hover: rgba(255,255,255,0.05);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--page); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+main { max-width: 1160px; margin: 0 auto; padding: 24px 16px 48px; }
+header.top { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+.sub { color: var(--ink-2); font-size: 13px; }
+.muted { color: var(--muted); }
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2);
+  border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px 2px 8px; background: var(--surface); }
+.badge svg { flex: none; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; min-width: 0; }
+.grid { display: grid; gap: 12px; }
+.hero-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 2fr); }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.kpi .label { color: var(--ink-2); font-size: 13px; }
+.kpi .value { font-size: 24px; font-weight: 600; margin-top: 2px; letter-spacing: -0.01em; }
+.kpi .note { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.hero .value { font-size: 52px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; margin: 6px 0 4px; }
+.meter { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; margin: 12px 0 6px; }
+.meter > span { display: block; height: 100%; background: var(--series-1); border-radius: 999px; }
+.charts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: 12px; }
+.chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--ink-2); font-size: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key-line { width: 14px; height: 2px; border-radius: 2px; display: inline-block; }
+.key-rect { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.plot { position: relative; }
+.plot svg { display: block; width: 100%; overflow: visible; }
+.plot text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  min-width: 150px; opacity: 0; transition: opacity .08s; z-index: 2; }
+.tip .t-date { color: var(--ink-2); margin-bottom: 4px; }
+.tip .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.tip .row b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.tip .row span.n { color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+details.tv { margin-top: 10px; }
+details.tv summary { cursor: pointer; color: var(--ink-2); font-size: 12px; }
+section.teams { margin-top: 24px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 12px; }
+select, input[type=search], button.btn {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; min-height: 34px;
+}
+input[type=search] { min-width: 200px; }
+button.btn { cursor: pointer; }
+button.btn:hover { background: var(--hover); }
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--grid); }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 500; color: var(--ink-2); font-size: 12px; position: sticky; top: 0; background: var(--surface); }
+th[data-k] { cursor: pointer; user-select: none; }
+th[data-k]:hover { color: var(--ink); }
+th .arr { color: var(--muted); margin-left: 3px; }
+tbody tr:hover td { background: var(--hover); }
+td.team { font-weight: 500; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+td.aff { text-align: left; color: var(--ink-2); }
+.pct { display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.pct .bar { width: 64px; height: 4px; background: var(--track); border-radius: 999px; overflow: hidden; }
+.pct .bar > i { display: block; height: 100%; background: var(--series-1); }
+tfoot td { font-weight: 600; border-top: 1px solid var(--axis); border-bottom: none; }
+.heat td.c { min-width: 66px; font-size: 12px; }
+.scale { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+.scale i { width: 22px; height: 10px; border-radius: 2px; display: inline-block; }
+.empty { padding: 48px 16px; text-align: center; color: var(--ink-2); }
+footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
+@media (max-width: 900px) {
+  .hero-row, .charts { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 560px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .hero .value { font-size: 44px; }
+  input[type=search] { min-width: 0; flex: 1 1 160px; }
+  .standings th:nth-child(2), .standings td:nth-child(2) { display: none; }
+  td.team { max-width: 150px; }
+  th, td { padding: 7px 8px; }
+}
+</style>
+</head>
+<body>
+<main id="app">
+  <div class="empty" id="loading">Loading fundraising data…</div>
+</main>
+<!-- For offline previews the build can inline data here; the live site fetches data.json. -->
+<script id="inline-data" type="application/json"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (tag, attrs = {}, ...kids) => {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") el.className = v;
+      else if (k === "text") el.textContent = v;
+      else if (k === "style") el.style.cssText = v;
+      else el.setAttribute(k, v);
+    }
+    for (const kid of kids) if (kid != null) el.append(kid);
+    return el;
+  };
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const s = (tag, attrs = {}) => {
+    const el = document.createElementNS(SVGNS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+  };
+  const usd0 = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  const usd2 = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
+  const int = new Intl.NumberFormat("en-US");
+  const compact = v => {
+    const a = Math.abs(v);
+    if (a >= 1e6) return "$" + (v / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M";
+    if (a >= 1e4) return "$" + Math.round(v / 1e3) + "K";
+    return usd0.format(v);
+  };
+  // dates are 'YYYY-MM-DD' calendar days; keep them in UTC to avoid TZ shifts
+  const d2n = iso => { const [y, m, d] = iso.split("-").map(Number); return Date.UTC(y, m - 1, d) / 864e5; };
+  const n2d = n => new Date(n * 864e5).toISOString().slice(0, 10);
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const fmtDay = iso => { const [y, m, d] = iso.split("-").map(Number); return `${MONTHS[m-1]} ${d}, ${y}`; };
+  const fmtMonth = ym => { const [y, m] = ym.split("-").map(Number); return `${MONTHS[m-1]} ${String(y).slice(2)}`; };
+  const fmtMonthLong = ym => { const [y, m] = ym.split("-").map(Number); return `${MONTHS[m-1]} ${y}`; };
+  const daysIn = ym => { const [y, m] = ym.split("-").map(Number); return new Date(Date.UTC(y, m, 0)).getUTCDate(); };
+  const addMonth = ym => { let [y, m] = ym.split("-").map(Number); m++; if (m > 12) { m = 1; y++; } return `${y}-${String(m).padStart(2, "0")}`; };
+
+  async function load() {
+    const inline = document.getElementById("inline-data").textContent.trim();
+    if (inline) return JSON.parse(inline);
+    const r = await fetch("data.json", { cache: "no-store" });
+    if (!r.ok) throw new Error("data.json " + r.status);
+    return r.json();
+  }
+
+  load().then(render).catch(err => {
+    const app = document.getElementById("app");
+    app.replaceChildren($("div", { class: "empty", text: "No data yet. Run the daily sync once (Actions → Daily BEPOS sync → Run workflow). (" + err.message + ")" }));
+  });
+
+  function render(D) {
+    const app = document.getElementById("app");
+    app.replaceChildren();
+    document.title = D.event + " Fundraising";
+
+    // ---------- derive ----------
+    const teamInfo = new Map(D.teams.map(t => [t.team, t]));
+    const through = D.through;
+    const thisMonth = through.slice(0, 7);
+    const last7Start = d2n(through) - 6;
+    const byDay = new Map();                 // date -> received
+    const byTeamMonth = new Map();           // team -> Map(month -> received)
+    const byTeam7 = new Map(), byTeamThisMonth = new Map();
+    for (const [date, team, rec] of D.daily) {
+      byDay.set(date, (byDay.get(date) || 0) + rec);
+      const ym = date.slice(0, 7);
+      if (!byTeamMonth.has(team)) byTeamMonth.set(team, new Map());
+      const tm = byTeamMonth.get(team);
+      tm.set(ym, (tm.get(ym) || 0) + rec);
+      if (d2n(date) >= last7Start) byTeam7.set(team, (byTeam7.get(team) || 0) + rec);
+      if (ym === thisMonth) byTeamThisMonth.set(team, (byTeamThisMonth.get(team) || 0) + rec);
+    }
+    const goalByMonth = new Map(D.monthly_goals.map(g => [g.month, g.goal]));
+    const lastGoalMonth = D.monthly_goals.filter(g => g.goal > 0).map(g => g.month).sort().pop() || thisMonth;
+    const months = [];
+    for (let ym = D.season_start.slice(0, 7); ym <= (lastGoalMonth > thisMonth ? lastGoalMonth : thisMonth); ym = addMonth(ym)) months.push(ym);
+    const monthRec = new Map(months.map(m => [m, 0]));
+    for (const [date, rec] of byDay) { const ym = date.slice(0, 7); monthRec.set(ym, (monthRec.get(ym) || 0) + rec); }
+    const sum = a => a.reduce((x, y) => x + y, 0);
+    const last7 = sum([...byDay].filter(([d]) => d2n(d) >= last7Start).map(([, v]) => v));
+    const T = D.totals;
+    const pctGoal = D.event_goal ? T.received / D.event_goal : 0;
+
+    // ---------- header ----------
+    const recon = D.reconciliation || {};
+    const ok = recon.ok;
+    const badgeIcon = ok
+      ? '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="var(--good)"/><path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l7 13H1z" fill="var(--warning)"/><path d="M8 6v4" stroke="#0b0b0b" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="12.2" r="1" fill="#0b0b0b"/></svg>';
+    const badge = $("span", { class: "badge", title: `Sum of daily rows ${usd2.format(recon.sum_of_days_received || 0)} vs BEPOS all-time ${usd2.format(recon.all_time_received || 0)}` });
+    badge.innerHTML = badgeIcon;
+    badge.append(document.createTextNode(ok ? "Ties to BEPOS" : `Off BEPOS by ${usd2.format(recon.gap_received || 0)}`));
+    const updated = new Date(D.updated);
+    app.append($("header", { class: "top" },
+      $("div", {}, $("h1", { text: D.event + " fundraising" }),
+        $("div", { class: "sub", text: `Updated ${updated.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" })} ET · data through ${fmtDay(through)} · source: BEPOS Team Report` })),
+      badge));
+
+    // ---------- hero + KPIs ----------
+    const hero = $("div", { class: "card hero" },
+      $("div", { class: "kpi" }, $("div", { class: "label", text: "Received to date" })),
+      $("div", { class: "value", text: usd0.format(T.received) }),
+      $("div", { class: "sub", text: `${(pctGoal * 100).toFixed(1)}% of the ${usd0.format(D.event_goal)} goal` }));
+    const meter = $("div", { class: "meter", role: "img", "aria-label": `${(pctGoal * 100).toFixed(1)} percent of goal` }, $("span", { style: `width:${Math.min(100, pctGoal * 100).toFixed(2)}%` }));
+    hero.append(meter, $("div", { class: "muted", style: "font-size:12px", text: `${usd0.format(Math.max(0, D.event_goal - T.received))} to go` }));
+    const mGoal = goalByMonth.get(thisMonth) || 0, mRec = monthRec.get(thisMonth) || 0;
+    const kpi = (label, value, note) => $("div", { class: "card kpi" }, $("div", { class: "label", text: label }), $("div", { class: "value", text: value }), note ? $("div", { class: "note", text: note }) : null);
+    const kpis = $("div", { class: "kpis" },
+      kpi(`${fmtMonthLong(thisMonth)} so far`, usd0.format(mRec), mGoal ? `${Math.round(mRec / mGoal * 100)}% of ${usd0.format(mGoal)} month goal` : "No month goal set"),
+      kpi("Last 7 days", usd0.format(last7), `${fmtDay(n2d(last7Start))} – ${fmtDay(through)}`),
+      kpi("Pledged, not yet received", usd0.format(T.due), "Offline checks marked due in BEPOS"),
+      kpi("Participants", int.format(T.participants), `${T.teams} teams`),
+      kpi("Supporters", int.format(T.supporters), "Donors in BEPOS"),
+      kpi("Avg per participant", usd0.format(T.participants ? T.received / T.participants : 0), "Received ÷ participants"));
+    app.append($("div", { class: "grid hero-row" }, hero, kpis));
+
+    // ---------- charts ----------
+    const cumCard = $("div", { class: "card" });
+    const monCard = $("div", { class: "card" });
+    app.append($("div", { class: "grid charts" }, cumCard, monCard));
+
+    // cumulative series
+    const x0 = d2n(D.season_start);
+    const xEnd = d2n(`${months[months.length - 1]}-${String(daysIn(months[months.length - 1])).padStart(2, "0")}`);
+    const xThrough = d2n(through);
+    const cum = [];       // [dayNum, cumReceived] through `through`
+    let run = 0;
+    for (let n = x0; n <= xThrough; n++) { run += byDay.get(n2d(n)) || 0; cum.push([n, run]); }
+    const pace = [];      // [dayNum, cumGoal] linear within each month
+    let base = 0;
+    for (const ym of months) {
+      const g = goalByMonth.get(ym) || 0, dim = daysIn(ym), first = d2n(ym + "-01");
+      for (let i = 0; i < dim; i++) { const n = first + i; if (n >= x0 && n <= xEnd) pace.push([n, base + g * (i + 1) / dim]); }
+      base += g;
+    }
+    const paceAt = new Map(pace);
+    const legendLine = (color, label) => $("span", {}, $("i", { class: "key-line", style: `background:${color}` }), document.createTextNode(label));
+    const legendRect = (color, label) => $("span", {}, $("i", { class: "key-rect", style: `background:${color}` }), document.createTextNode(label));
+    const nowPace = paceAt.get(xThrough) || 0;
+    cumCard.append($("div", { class: "chart-head" },
+      $("div", {}, $("h2", { text: "Cumulative received vs goal pace" }),
+        $("div", { class: "sub", text: nowPace ? `${usd0.format(Math.abs(cum.at(-1)[1] - nowPace))} ${cum.at(-1)[1] >= nowPace ? "ahead of" : "behind"} goal pace today` : "" })),
+      $("div", { class: "legend" }, legendLine("var(--series-1)", "Received"), legendLine("var(--goal)", "Goal pace"))));
+    const cumPlot = $("div", { class: "plot" });
+    cumCard.append(cumPlot);
+
+    monCard.append($("div", { class: "chart-head" },
+      $("div", {}, $("h2", { text: "Received by month" }), $("div", { class: "sub", text: "Money counts in the month BEPOS marks it received" })),
+      $("div", { class: "legend" }, legendRect("var(--series-1)", "Received"), legendLine("var(--goal)", "Month goal"))));
+    const monPlot = $("div", { class: "plot" });
+    monCard.append(monPlot);
+
+    // table view for both charts
+    const tvBody = $("tbody");
+    let cumR = 0, cumG = 0;
+    for (const ym of months) {
+      cumR += monthRec.get(ym) || 0; cumG += goalByMonth.get(ym) || 0;
+      const future = ym > thisMonth;
+      tvBody.append($("tr", {},
+        $("td", { text: fmtMonthLong(ym) }),
+        $("td", { text: future ? "–" : usd0.format(monthRec.get(ym) || 0) }),
+        $("td", { text: usd0.format(goalByMonth.get(ym) || 0) }),
+        $("td", { text: future ? "–" : usd0.format(cumR) }),
+        $("td", { text: usd0.format(cumG) })));
+    }
+    monCard.append($("details", { class: "tv" }, $("summary", { text: "View as table" }),
+      $("div", { class: "tbl-wrap" }, $("table", {},
+        $("thead", {}, $("tr", {}, ...["Month", "Received", "Goal", "Cumulative received", "Cumulative goal"].map(h => $("th", { text: h })))),
+        tvBody))));
+
+    function drawCum() {
+      const W = Math.max(280, cumPlot.clientWidth), H = 240, m = { l: 48, r: 12, t: 10, b: 26 };
+      const iw = W - m.l - m.r, ih = H - m.t - m.b;
+      const yMax = niceMax(Math.max(pace.length ? pace.at(-1)[1] : 0, cum.at(-1)[1]));
+      const X = n => m.l + (n - x0) / (xEnd - x0) * iw, Y = v => m.t + ih - v / yMax * ih;
+      const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": "Cumulative received versus goal pace by day" });
+      for (const v of ticks(yMax)) {
+        svg.append(s("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: v === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1, "shape-rendering": "crispEdges" }));
+        const t = s("text", { x: m.l - 6, y: Y(v) + 4, "text-anchor": "end" }); t.textContent = compact(v); svg.append(t);
+      }
+      const every = iw < 420 ? 2 : 1;
+      months.forEach((ym, i) => {
+        if (i % every) return;
+        const t = s("text", { x: X(d2n(ym + "-01")), y: H - 6, "text-anchor": "start" }); t.textContent = fmtMonth(ym); svg.append(t);
+      });
+      const path = pts => pts.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + "," + Y(p[1]).toFixed(1)).join("");
+      svg.append(s("path", { d: path(pace), fill: "none", stroke: "var(--goal)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round", opacity: 0.55 }));
+      const area = path(cum) + `L${X(cum.at(-1)[0]).toFixed(1)},${Y(0)}L${X(cum[0][0]).toFixed(1)},${Y(0)}Z`;
+      svg.append(s("path", { d: area, fill: "var(--series-1-wash)" }));
+      svg.append(s("path", { d: path(cum), fill: "none", stroke: "var(--series-1)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+      const last = cum.at(-1);
+      svg.append(s("circle", { cx: X(last[0]), cy: Y(last[1]), r: 4, fill: "var(--series-1)", stroke: "var(--surface)", "stroke-width": 2 }));
+      const lbl = s("text", { x: Math.min(X(last[0]) + 8, W - m.r - 4), y: Y(last[1]) - 8, "text-anchor": X(last[0]) > W - 90 ? "end" : "start", style: "fill:var(--ink);font-weight:600" });
+      lbl.textContent = compact(last[1]); svg.append(lbl);
+      // crosshair + tooltip
+      const xh = s("line", { y1: m.t, y2: m.t + ih, stroke: "var(--axis)", "stroke-width": 1, opacity: 0 });
+      const dotA = s("circle", { r: 4, fill: "var(--series-1)", stroke: "var(--surface)", "stroke-width": 2, opacity: 0 });
+      const dotG = s("circle", { r: 4, fill: "var(--goal)", stroke: "var(--surface)", "stroke-width": 2, opacity: 0 });
+      svg.append(xh, dotG, dotA);
+      const hit = s("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent", tabindex: 0, "aria-label": "Chart hover area" });
+      svg.append(hit);
+      const tip = $("div", { class: "tip" });
+      const cumMap = new Map(cum);
+      const show = n => {
+        n = Math.max(x0, Math.min(xEnd, Math.round(n)));
+        const px = X(n); xh.setAttribute("x1", px); xh.setAttribute("x2", px); xh.setAttribute("opacity", 1);
+        const a = cumMap.get(n), g = paceAt.get(n);
+        if (a != null) { dotA.setAttribute("cx", px); dotA.setAttribute("cy", Y(a)); dotA.setAttribute("opacity", 1); } else dotA.setAttribute("opacity", 0);
+        if (g != null) { dotG.setAttribute("cx", px); dotG.setAttribute("cy", Y(g)); dotG.setAttribute("opacity", 1); } else dotG.setAttribute("opacity", 0);
+        tip.replaceChildren($("div", { class: "t-date", text: fmtDay(n2d(n)) }),
+          tipRow("var(--series-1)", "Received", a != null ? usd0.format(a) : "–"),
+          tipRow("var(--goal)", "Goal pace", g != null ? usd0.format(g) : "–"),
+          a != null && g != null ? tipRow(null, a >= g ? "Ahead by" : "Behind by", usd0.format(Math.abs(a - g))) : null);
+        tip.style.opacity = 1;
+        const tw = tip.offsetWidth; tip.style.left = Math.max(0, Math.min(W - tw, px + 12 - (px > W / 2 ? tw + 24 : 0))) + "px"; tip.style.top = "8px";
+      };
+      const hide = () => { tip.style.opacity = 0; xh.setAttribute("opacity", 0); dotA.setAttribute("opacity", 0); dotG.setAttribute("opacity", 0); };
+      hit.addEventListener("pointermove", e => { const r = svg.getBoundingClientRect(); show(x0 + ((e.clientX - r.left) * (W / r.width) - m.l) / iw * (xEnd - x0)); });
+      hit.addEventListener("pointerleave", hide);
+      let kn = xThrough;
+      hit.addEventListener("focus", () => show(kn));
+      hit.addEventListener("blur", hide);
+      hit.addEventListener("keydown", e => { if (e.key === "ArrowLeft") { kn = Math.max(x0, kn - 1); show(kn); e.preventDefault(); } if (e.key === "ArrowRight") { kn = Math.min(xEnd, kn + 1); show(kn); e.preventDefault(); } });
+      cumPlot.replaceChildren(svg, tip);
+    }
+
+    function drawMon() {
+      const W = Math.max(280, monPlot.clientWidth), H = 240, m = { l: 48, r: 8, t: 18, b: 26 };
+      const iw = W - m.l - m.r, ih = H - m.t - m.b;
+      const yMax = niceMax(Math.max(...months.map(ym => Math.max(goalByMonth.get(ym) || 0, monthRec.get(ym) || 0))));
+      const Y = v => m.t + ih - v / yMax * ih, bw = iw / months.length, barW = Math.min(24, bw * 0.55);
+      const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": "Received by month with month goals" });
+      for (const v of ticks(yMax)) {
+        svg.append(s("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: v === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1, "shape-rendering": "crispEdges" }));
+        const t = s("text", { x: m.l - 6, y: Y(v) + 4, "text-anchor": "end" }); t.textContent = compact(v); svg.append(t);
+      }
+      const tip = $("div", { class: "tip" });
+      months.forEach((ym, i) => {
+        const cx = m.l + bw * (i + 0.5), rec = monthRec.get(ym) || 0, g = goalByMonth.get(ym) || 0, future = ym > thisMonth;
+        const t = s("text", { x: cx, y: H - 6, "text-anchor": "middle" }); t.textContent = (bw < 34 ? fmtMonth(ym).slice(0, 1) : fmtMonth(ym).slice(0, 3)); svg.append(t);
+        const grp = s("g", { tabindex: 0, role: "img", "aria-label": `${fmtMonthLong(ym)}: received ${usd0.format(rec)}, goal ${usd0.format(g)}` });
+        if (!future && rec > 0) {
+          const h = Math.max(1, ih - (Y(rec) - m.t)), y = Y(rec), r = Math.min(4, h, barW / 2), x = cx - barW / 2;
+          grp.append(s("path", { d: `M${x},${Y(0)}V${y + r}Q${x},${y} ${x + r},${y}H${x + barW - r}Q${x + barW},${y} ${x + barW},${y + r}V${Y(0)}Z`, fill: "var(--series-1)", class: "bar" }));
+        }
+        if (g > 0) grp.append(s("line", { x1: cx - barW / 2 - 6, x2: cx + barW / 2 + 6, y1: Y(g), y2: Y(g), stroke: "var(--goal)", "stroke-width": 2, "stroke-linecap": "round" }));
+        if (ym === thisMonth) {
+          const lab = s("text", { x: cx, y: Math.min(Y(rec), g ? Y(g) : Infinity) - 6, "text-anchor": "middle", style: "fill:var(--ink);font-weight:600" });
+          lab.textContent = compact(rec); grp.append(lab);
+        }
+        const hitR = s("rect", { x: m.l + bw * i, y: m.t, width: bw, height: ih, fill: "transparent" });
+        grp.append(hitR);
+        const showTip = () => {
+          grp.querySelector(".bar")?.setAttribute("opacity", 0.8);
+          tip.replaceChildren($("div", { class: "t-date", text: fmtMonthLong(ym) }),
+            tipRow("var(--series-1)", "Received", future ? "–" : usd0.format(rec), true),
+            tipRow("var(--goal)", "Goal", usd0.format(g)),
+            !future && g ? tipRow(null, "Of goal", Math.round(rec / g * 100) + "%") : null);
+          tip.style.opacity = 1;
+          const tw = tip.offsetWidth; tip.style.left = Math.max(0, Math.min(W - tw, cx - tw / 2)) + "px"; tip.style.top = "0px";
+        };
+        const hideTip = () => { grp.querySelector(".bar")?.removeAttribute("opacity"); tip.style.opacity = 0; };
+        grp.addEventListener("pointerenter", showTip); grp.addEventListener("pointerleave", hideTip);
+        grp.addEventListener("focus", showTip); grp.addEventListener("blur", hideTip);
+        svg.append(grp);
+      });
+      monPlot.replaceChildren(svg, tip);
+    }
+    function tipRow(color, name, val, rect) {
+      const key = color ? $("i", { class: rect ? "key-rect" : "key-line", style: `background:${color}` }) : null;
+      return $("div", { class: "row" }, $("span", { class: "n" }, key, document.createTextNode(name)), $("b", { text: val }));
+    }
+    // y-scale: a clean step (1/2/2.5/5 x 10^k) giving at most 5 intervals
+    function niceStep(v) {
+      const raw = Math.max(v, 1) / 5, p = Math.pow(10, Math.floor(Math.log10(raw)));
+      for (const f of [1, 2, 2.5, 5, 10]) if (f * p >= raw) return f * p;
+      return 10 * p;
+    }
+    function niceMax(v) { const st = niceStep(v); return Math.max(st, Math.ceil(v / st) * st); }
+    function ticks(max) { const st = niceStep(max), out = []; for (let t = 0; t <= max + 1e-6; t += st) out.push(t); return out; }
+
+    // ---------- teams ----------
+    const sec = $("section", { class: "teams" });
+    app.append(sec);
+    sec.append($("h2", { text: "Teams" }), $("div", { class: "sub", text: "Filters apply to both tables below." }));
+    const affs = [...new Set(D.teams.map(t => t.affiliation || "Other"))].sort();
+    const affSel = $("select", { "aria-label": "Affiliation" }, $("option", { value: "", text: "All affiliations" }), ...affs.map(a => $("option", { value: a, text: a })));
+    const search = $("input", { type: "search", placeholder: "Search teams", "aria-label": "Search teams" });
+    const hideZero = $("select", { "aria-label": "Show teams" }, $("option", { value: "money", text: "Teams with money or a goal" }), $("option", { value: "all", text: "All teams" }));
+    const dl = $("button", { class: "btn", type: "button", text: "Download team × month CSV" });
+    sec.append($("div", { class: "filters" }, affSel, hideZero, search, dl));
+
+    const tCard = $("div", { class: "card" }), hCard = $("div", { class: "card", style: "margin-top:12px" });
+    sec.append(tCard, hCard);
+    let sortK = "received", sortDir = -1;
+    const cols = [
+      ["display", "Team"], ["affiliation", "Affiliation"], ["participants", "Participants"],
+      ["received", "Received"], ["due", "Pledged"], ["goal", "2027 goal"], ["pct", "% of goal"],
+      ["m", fmtMonth(thisMonth)], ["w", "Last 7 days"]];
+    const rowsAll = D.teams.map(t => ({
+      ...t, affiliation: t.affiliation || "Other",
+      pct: t.goal ? t.received / t.goal : null,
+      m: byTeamThisMonth.get(t.team) || 0, w: byTeam7.get(t.team) || 0 }));
+    const filtered = () => rowsAll.filter(r =>
+      (!affSel.value || r.affiliation === affSel.value) &&
+      (hideZero.value === "all" || r.received || r.due || r.goal) &&
+      (!search.value || r.display.toLowerCase().includes(search.value.toLowerCase()) || r.team.toLowerCase().includes(search.value.toLowerCase())));
+
+    function drawTeams() {
+      const rows = filtered().sort((a, b) => {
+        const va = a[sortK], vb = b[sortK];
+        if (typeof va === "string" || typeof vb === "string") return String(va).localeCompare(String(vb)) * sortDir;
+        return ((va ?? -1) - (vb ?? -1)) * sortDir;
+      });
+      const head = $("tr", {}, ...cols.map(([k, label]) => {
+        const th = $("th", { "data-k": k, scope: "col", "aria-sort": sortK === k ? (sortDir > 0 ? "ascending" : "descending") : "none" }, document.createTextNode(label));
+        if (sortK === k) th.append($("span", { class: "arr", text: sortDir > 0 ? "↑" : "↓" }));
+        th.addEventListener("click", () => { if (sortK === k) sortDir = -sortDir; else { sortK = k; sortDir = (k === "display" || k === "affiliation") ? 1 : -1; } drawTeams(); });
+        return th;
+      }));
+      const body = $("tbody");
+      for (const r of rows) {
+        const pct = r.pct == null ? $("span", { class: "muted", text: "–" })
+          : $("span", { class: "pct" }, document.createTextNode(Math.round(r.pct * 100) + "%"), $("span", { class: "bar" }, $("i", { style: `width:${Math.min(100, r.pct * 100)}%` })));
+        body.append($("tr", {},
+          $("td", { class: "team", title: r.team, text: r.display }),
+          $("td", { class: "aff", text: r.affiliation }),
+          $("td", { text: int.format(r.participants) }),
+          $("td", { text: usd0.format(r.received) }),
+          $("td", { text: r.due ? usd0.format(r.due) : "–" }),
+          $("td", { text: r.goal ? usd0.format(r.goal) : "–" }),
+          $("td", {}, pct),
+          $("td", { text: r.m ? usd0.format(r.m) : "–" }),
+          $("td", { text: r.w ? usd0.format(r.w) : "–" })));
+      }
+      const tot = k => sum(rows.map(r => r[k] || 0));
+      const gsum = tot("goal");
+      const foot = $("tfoot", {}, $("tr", {},
+        $("td", { text: `${rows.length} teams` }), $("td", {}), $("td", { text: int.format(tot("participants")) }),
+        $("td", { text: usd0.format(tot("received")) }), $("td", { text: usd0.format(tot("due")) }),
+        $("td", { text: gsum ? usd0.format(gsum) : "–" }),
+        $("td", { text: gsum ? Math.round(sum(rows.filter(r => r.goal).map(r => r.received)) / gsum * 100) + "%" : "–" }),
+        $("td", { text: usd0.format(tot("m")) }), $("td", { text: usd0.format(tot("w")) })));
+      tCard.replaceChildren(
+        $("div", { class: "chart-head" }, $("div", {}, $("h2", { text: "Team standings" }), $("div", { class: "sub", text: "All-time totals from BEPOS; goals from config/teams.csv. Click a column to sort." }))),
+        $("div", { class: "tbl-wrap" }, $("table", { class: "standings" }, $("thead", {}, head), body, foot)));
+      drawHeat(rows);
+    }
+
+    // team x month heat table (sequential blue, 7 classes)
+    const breaks = [0, 100, 500, 1000, 5000, 10000, 25000];
+    const cls = v => { if (!v) return 0; let i = 0; while (i < breaks.length - 1 && v >= breaks[i + 1]) i++; return Math.min(6, i + 1); };
+    const shownMonths = months.filter(ym => ym <= thisMonth);
+    function drawHeat(rows) {
+      const head = $("tr", {}, $("th", { text: "Team" }), ...shownMonths.map(ym => $("th", { text: fmtMonth(ym) })), $("th", { text: "Total" }));
+      const body = $("tbody");
+      const colTot = new Map(shownMonths.map(m => [m, 0]));
+      for (const r of rows) {
+        const tm = byTeamMonth.get(r.team) || new Map();
+        const tr = $("tr", {}, $("td", { class: "team", title: r.team, text: r.display }));
+        let rt = 0;
+        for (const ym of shownMonths) {
+          const v = tm.get(ym) || 0; rt += v; colTot.set(ym, colTot.get(ym) + v);
+          const c = cls(v), dark = c >= 4;
+          tr.append($("td", { class: "c", style: `background:var(--seq-${c});color:${c === 0 ? "var(--muted)" : dark ? "#ffffff" : "var(--ink)"}`, title: `${r.display}, ${fmtMonthLong(ym)}: ${usd2.format(v)}`, text: v ? compact(v) : "·" }));
+        }
+        tr.append($("td", { text: usd0.format(rt), style: "font-weight:500" }));
+        body.append(tr);
+      }
+      const foot = $("tfoot", {}, $("tr", {}, $("td", { text: "Total" }), ...shownMonths.map(ym => $("td", { class: "c", text: compact(colTot.get(ym)) })), $("td", { text: usd0.format(sum([...colTot.values()])) })));
+      const scale = $("div", { class: "scale" }, document.createTextNode("Received per month: "),
+        ...breaks.map((b, i) => [$("i", { style: `background:var(--seq-${i === 0 ? 0 : i})` }), document.createTextNode(i === 0 ? "$0" : (i === breaks.length - 1 ? compact(b) + "+" : compact(b)))]).flat());
+      hCard.replaceChildren(
+        $("div", { class: "chart-head" }, $("div", {}, $("h2", { text: "Team × month" }), $("div", { class: "sub", text: "Received each month by team, updated automatically." })), scale),
+        $("div", { class: "tbl-wrap" }, $("table", { class: "heat" }, $("thead", {}, head), body, foot)));
+    }
+
+    dl.addEventListener("click", () => {
+      const rows = filtered();
+      const q = v => /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+      const lines = [["Team", "BEPOS team", "Affiliation", ...shownMonths, "Total received", "Pledged", "2027 goal"].map(q).join(",")];
+      for (const r of rows) {
+        const tm = byTeamMonth.get(r.team) || new Map();
+        const vals = shownMonths.map(ym => (tm.get(ym) || 0).toFixed(2));
+        lines.push([q(r.display), q(r.team), q(r.affiliation), ...vals, r.received.toFixed(2), r.due.toFixed(2), r.goal ? r.goal.toFixed(2) : ""].join(","));
+      }
+      const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+      const a = $("a", { href: URL.createObjectURL(blob), download: `${D.eventtag}_team_by_month_${through}.csv` });
+      document.body.append(a); a.click(); a.remove();
+    });
+    [affSel, hideZero].forEach(el => el.addEventListener("change", drawTeams));
+    search.addEventListener("input", drawTeams);
+
+    app.append($("footer", { text: `Team-level totals only. Pulled daily from the BEPOS Team Report (${D.eventtag}) using running totals from ${fmtDay(D.season_start)}, so days add up exactly to the BEPOS all-time figure.` }));
+
+    drawCum(); drawMon(); drawTeams();
+    let raf; window.addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { drawCum(); drawMon(); }); });
+  }
+})();
+</script>
+</body>
+</html>
