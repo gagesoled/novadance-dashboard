@@ -1,0 +1,64 @@
+name: Daily BEPOS sync
+
+on:
+  schedule:
+    # GitHub cron runs in UTC. 11:23 UTC = 6:23 AM Eastern (EST) / 7:23 AM (EDT).
+    - cron: "23 11 * * *"
+    # Peak season: un-comment to also refresh at 12:23 PM and 6:23 PM EST.
+    # - cron: "23 17,23 * * *"
+  workflow_dispatch: {}     # adds a "Run workflow" button on the Actions tab
+
+permissions:
+  contents: write           # commit the refreshed data files
+  pages: write              # publish the dashboard
+  id-token: write
+
+concurrency:
+  group: bepos-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Pull BEPOS Team Report
+        env:
+          BEPOS_EMAIL: ${{ secrets.BEPOS_EMAIL }}
+          BEPOS_PASSWORD: ${{ secrets.BEPOS_PASSWORD }}
+        run: python bepos_sync.py
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name  "novadance-sync-bot"
+          git config user.email "novadance-sync-bot@users.noreply.github.com"
+          git add data site/data.json
+          if git diff --cached --quiet; then
+            echo "No changes since last run."
+          else
+            git commit -m "Daily BEPOS sync $(TZ=America/New_York date '+%Y-%m-%d %H:%M %Z')"
+            git push
+          fi
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: sync
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
