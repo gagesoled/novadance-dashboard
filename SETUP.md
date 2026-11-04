@@ -127,14 +127,13 @@ team for Nov 3, 2026.
   line in `.github/workflows/daily-sync.yml`
   (`23 17,23 * * *` = 12:23 PM and 6:23 PM Eastern).
 
-## Open check: monthly goals vs. the $1.1M headline goal
+## Goal: the data-sheet total
 
-`config/monthly_goals.csv` sums to $1,067,466.20, which is $32,533.80 short
-of the $1,100,000 `event_goal` in `config/settings.json` (April and May 2027
-are $0). The cumulative chart's goal-pace line therefore tops out at the
-monthly-goal total, while the hero meter measures against $1.1M. The numbers
-were kept exactly as supplied — confirm with the exec team whether the
-$32,533.80 belongs in a month (or in the headline goal) before changing them.
+`event_goal` in `config/settings.json` is $1,067,466.20, the sum of
+`config/monthly_goals.csv`. The $1,100,000 headline goal is ignored per
+Gage (Nov 3, 2026): the hero meter and the cumulative goal-pace line both
+measure against the monthly-goal total. If the monthly goals change, update
+`event_goal` to their new sum and run the workflow.
 
 ## Testing without BEPOS
 
