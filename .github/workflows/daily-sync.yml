@@ -2,10 +2,10 @@ name: Daily BEPOS sync
 
 on:
   schedule:
-    # GitHub cron runs in UTC. 11:23 UTC = 6:23 AM Eastern (EST) / 7:23 AM (EDT).
-    - cron: "23 11 * * *"
-    # Peak season: un-comment to also refresh at 12:23 PM and 6:23 PM EST.
-    # - cron: "23 17,23 * * *"
+    # GitHub cron runs in UTC. 13:00 UTC = 8:00 AM Eastern (EST) / 9:00 AM (EDT).
+    - cron: "0 13 * * *"
+    # Peak season: un-comment to also refresh at 12:00 PM and 6:00 PM EST.
+    # - cron: "0 17,23 * * *"
   workflow_dispatch: {}     # adds a "Run workflow" button on the Actions tab
 
 permissions:
