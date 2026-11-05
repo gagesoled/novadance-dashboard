@@ -10,7 +10,7 @@ GitHub Pages. Nobody has to export a CSV by hand again.
 - **Live page:** `https://<github-username>.github.io/novadance-dashboard/` once
   the steps below are done (the exact URL is shown on the repo's
   Settings → Pages page after the first deploy).
-- **Schedule:** daily at 11:23 UTC — 6:23 AM Eastern in winter, 7:23 AM in
+- **Schedule:** daily at 13:00 UTC — 8:00 AM Eastern in winter, 9:00 AM in
   daylight time. There is also a manual **Run workflow** button on the
   repo's Actions tab.
 - **What updates:** team standings, team × month table, cumulative vs. goal-pace
@@ -125,7 +125,7 @@ team for Nov 3, 2026.
   Never commit a password.
 - **Peak season:** to refresh three times a day, uncomment the second cron
   line in `.github/workflows/daily-sync.yml`
-  (`23 17,23 * * *` = 12:23 PM and 6:23 PM Eastern).
+  (`0 17,23 * * *` = 12:00 PM and 6:00 PM Eastern).
 
 ## Goal: the data-sheet total
 
