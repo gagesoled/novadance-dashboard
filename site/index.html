@@ -606,8 +606,10 @@ footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
       grid.append($("div", { style: "grid-column:1;grid-row:1" }));
       let prevMonth = -1;
       for (let w = 0; w < weeks; w++) {
-        const m = new Date((firstSun + w * 7) * 864e5).getUTCMonth();
-        grid.append($("div", { class: "mlab", style: `grid-column:${w + 2};grid-row:1`, text: m !== prevMonth ? MONTHS[m] : "" }));
+        const sat = firstSun + w * 7 + 6;
+        const m = new Date(sat * 864e5).getUTCMonth();
+        const startsInRange = d2n(n2d(sat).slice(0, 7) + "-01") <= calEnd;
+        grid.append($("div", { class: "mlab", style: `grid-column:${w + 2};grid-row:1`, text: m !== prevMonth && startsInRange ? MONTHS[m] : "" }));
         prevMonth = m;
       }
       ["Mon", "Wed", "Fri"].forEach((name, i) => {
