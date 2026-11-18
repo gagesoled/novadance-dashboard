@@ -10,6 +10,8 @@ team-level totals only (no donor, participant or captain details) to:
   data/team_snapshot.csv       current all-time totals per team
   data/snapshot_history.csv    one all-time row per team per run date (appended)
   site/data.json               everything the dashboard needs, incl. goals
+                               and per-day totals (dollars received and new
+                               supporters) for the calendar heatmap
 
 Credentials come from environment variables BEPOS_EMAIL and BEPOS_PASSWORD.
 Settings live in config/settings.json. Goals live in config/*.csv.
@@ -256,17 +258,22 @@ def run(today: date | None = None) -> dict:
     #    total. Every day is re-pulled on every run (full restatement), so
     #    late check receipts, refunds and moved donations are always current.
     daily = []
-    prev: dict[str, tuple[float, float, float]] = {}
+    day_totals: dict[date, list] = {}
+    prev: dict[str, tuple[float, float, float, int]] = {}
     affiliation = {r["team"]: r.get("affiliation", "") for r in snapshot}
     for d in daterange(start, end):
         cur = {}
         for r in client.team_report(mdy(start), mdy(d)):
             if not r["is_total"]:
-                cur[r["team"]] = (r["received"], r["due"], r["offline"])
+                cur[r["team"]] = (r["received"], r["due"], r["offline"],
+                                  r.get("supporters", 0))
                 affiliation.setdefault(r["team"], r.get("affiliation", ""))
+        tot = day_totals.setdefault(d, [0.0, 0])
         for team in sorted(set(cur) | set(prev)):
-            c, p = cur.get(team, (0.0, 0.0, 0.0)), prev.get(team, (0.0, 0.0, 0.0))
+            c, p = cur.get(team, (0.0, 0.0, 0.0, 0)), prev.get(team, (0.0, 0.0, 0.0, 0))
             delta = [round(c[i] - p[i], 2) for i in range(3)]
+            tot[0] = round(tot[0] + delta[0], 2)
+            tot[1] += c[3] - p[3]
             if any(delta):
                 daily.append({"date": d.isoformat(), "team": team,
                               "affiliation": affiliation.get(team, ""),
@@ -330,6 +337,9 @@ def run(today: date | None = None) -> dict:
             "goal": team_cfg.get(r["team"], {}).get("goal"),
         } for r in snapshot],
         "daily": [[r["date"], r["team"], r["received"], r["due"]] for r in daily],
+        "daily_totals": [[d.isoformat(), day_totals.get(d, [0.0, 0])[0],
+                          day_totals.get(d, [0.0, 0])[1]]
+                         for d in daterange(start, end)],
         "unmapped_teams": unknown,
     }
     SITE.mkdir(exist_ok=True)

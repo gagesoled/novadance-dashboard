@@ -14,7 +14,9 @@ GitHub Pages. Nobody has to export a CSV by hand again.
   daylight time. There is also a manual **Run workflow** button on the
   repo's Actions tab.
 - **What updates:** team standings, team × month table, cumulative vs. goal-pace
-  chart, monthly chart, KPIs, and the "Ties to BEPOS" reconciliation badge.
+  chart, monthly chart, KPIs, the "Ties to BEPOS" reconciliation badge, and a
+  Calendar tab with a per-day donation heatmap (dollars received and new
+  supporters per day).
 - **What is stored:** team-level totals only. Donor, participant, and captain
   details — including the captain passwords BEPOS puts in its CSVs — are
   dropped when the CSV is read and are never written to any file in this repo.

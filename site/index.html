@@ -25,10 +25,12 @@
   --seq-4: #3987e5; --seq-5: #256abf; --seq-6: #184f95;
   --track: #cde2fb;
   --hover: rgba(11,11,11,0.04);
+  --cal-zero: #f2d8d5;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
+    --cal-zero: #47241f;
     --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7;
     --muted: #898781; --grid: #2c2c2a; --axis: #383835;
     --border: rgba(255,255,255,0.10);
@@ -41,6 +43,7 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --cal-zero: #47241f;
   --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7;
   --muted: #898781; --grid: #2c2c2a; --axis: #383835;
   --border: rgba(255,255,255,0.10);
@@ -122,6 +125,21 @@ tfoot td { font-weight: 600; border-top: 1px solid var(--axis); border-bottom: n
 .scale { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
 .scale i { width: 22px; height: 10px; border-radius: 2px; display: inline-block; }
 .empty { padding: 48px 16px; text-align: center; color: var(--ink-2); }
+.tabs { display: flex; gap: 8px; margin: 0 0 16px; }
+.tabbtn { font: inherit; padding: 6px 16px; min-height: 34px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); cursor: pointer; }
+.tabbtn:hover { background: var(--hover); }
+.tabbtn[aria-selected="true"] { background: var(--ink); color: var(--page); border-color: transparent; font-weight: 600; }
+.cal-scroll { overflow-x: auto; padding-bottom: 6px; }
+.cal { display: grid; gap: 3px; width: max-content; }
+.cal .cell { width: 13px; height: 13px; border-radius: 3px; }
+.cal .cell[data-date] { cursor: pointer; }
+.cal .cell[data-date]:hover { outline: 2px solid var(--axis); }
+.cal .cell.future { background: transparent; border: 1px solid var(--grid); }
+.cal .cell.blank { background: transparent; }
+.cal .mlab { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: visible; align-self: end; }
+.cal .wlab { font-size: 10px; color: var(--muted); text-align: right; padding-right: 2px; line-height: 13px; }
+.cal-detail { margin-top: 10px; font-size: 13px; color: var(--ink-2); min-height: 20px; }
+.cal-detail b { color: var(--ink); font-weight: 600; }
 footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
 @media (max-width: 900px) {
   .hero-row, .charts { grid-template-columns: minmax(0,1fr); }
@@ -242,6 +260,22 @@ footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
         $("div", { class: "sub", text: `Updated ${updated.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" })} ET · data through ${fmtDay(through)} · source: BEPOS Team Report` })),
       badge));
 
+    // ---------- tabs ----------
+    const panelOverview = $("div", {});
+    const panelCalendar = $("div", { hidden: "" });
+    const btnOverview = $("button", { class: "tabbtn", type: "button", role: "tab", "aria-selected": "true", text: "Overview" });
+    const btnCalendar = $("button", { class: "tabbtn", type: "button", role: "tab", "aria-selected": "false", text: "Calendar" });
+    const showTab = cal => {
+      panelOverview.hidden = cal;
+      panelCalendar.hidden = !cal;
+      btnOverview.setAttribute("aria-selected", String(!cal));
+      btnCalendar.setAttribute("aria-selected", String(cal));
+      if (!cal) { drawCum(); drawMon(); }
+    };
+    btnOverview.addEventListener("click", () => showTab(false));
+    btnCalendar.addEventListener("click", () => showTab(true));
+    app.append($("div", { class: "tabs", role: "tablist" }, btnOverview, btnCalendar), panelOverview, panelCalendar);
+
     // ---------- hero + KPIs ----------
     const hero = $("div", { class: "card hero" },
       $("div", { class: "kpi" }, $("div", { class: "label", text: "Received to date" })),
@@ -258,12 +292,12 @@ footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
       kpi("Participants", int.format(T.participants), `${T.teams} teams`),
       kpi("Supporters", int.format(T.supporters), "Donors in BEPOS"),
       kpi("Avg per participant", usd0.format(T.participants ? T.received / T.participants : 0), "Received ÷ participants"));
-    app.append($("div", { class: "grid hero-row" }, hero, kpis));
+    panelOverview.append($("div", { class: "grid hero-row" }, hero, kpis));
 
     // ---------- charts ----------
     const cumCard = $("div", { class: "card" });
     const monCard = $("div", { class: "card" });
-    app.append($("div", { class: "grid charts" }, cumCard, monCard));
+    panelOverview.append($("div", { class: "grid charts" }, cumCard, monCard));
 
     // cumulative series
     const x0 = d2n(D.season_start);
@@ -427,7 +461,7 @@ footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
 
     // ---------- teams ----------
     const sec = $("section", { class: "teams" });
-    app.append(sec);
+    panelOverview.append(sec);
     sec.append($("h2", { text: "Teams" }), $("div", { class: "sub", text: "Filters apply to both tables below." }));
     const affs = [...new Set(D.teams.map(t => t.affiliation || "Other"))].sort();
     const affSel = $("select", { "aria-label": "Affiliation" }, $("option", { value: "", text: "All affiliations" }), ...affs.map(a => $("option", { value: a, text: a })));
@@ -537,10 +571,87 @@ footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
     [affSel, hideZero].forEach(el => el.addEventListener("change", drawTeams));
     search.addEventListener("input", drawTeams);
 
+    // ---------- calendar heatmap ----------
+    const calCard = $("div", { class: "card" });
+    panelCalendar.append(calCard);
+    function drawCalendar() {
+      const dayTot = new Map();
+      const hasCounts = Array.isArray(D.daily_totals);
+      if (hasCounts) for (const [d, rec, sup] of D.daily_totals) dayTot.set(d, { rec, sup });
+      else for (const [d, v] of byDay) dayTot.set(d, { rec: v, sup: null });
+      const calStart = d2n(D.season_start);
+      const calEnd = d2n(`${lastGoalMonth}-${String(daysIn(lastGoalMonth)).padStart(2, "0")}`);
+      const throughN = d2n(through);
+      let maxV = 0, maxD = null, activeDays = 0;
+      for (const [d, v] of dayTot) {
+        const n = d2n(d);
+        if (n < calStart || n > throughN) continue;
+        if (v.rec > 0) activeDays++;
+        if (v.rec > maxV) { maxV = v.rec; maxD = d; }
+      }
+      const colorFor = v => {
+        if (v <= 0) return "var(--cal-zero)";
+        const t = Math.sqrt(v / (maxV || 1));
+        return `hsl(${Math.round(120 * t)} 62% ${Math.round(82 - 44 * t)}%)`;
+      };
+      const supText = v => v.sup == null ? "" : ` · ${int.format(Math.max(0, v.sup))} new supporter${v.sup === 1 ? "" : "s"}`;
+      const detail = $("div", { class: "cal-detail" });
+      detail.innerHTML = maxD
+        ? `Best day: <b>${fmtDay(maxD)}</b> — <b>${usd0.format(maxV)}</b>${supText(dayTot.get(maxD))}. ${activeDays} days with donations so far. Hover or tap a square for a day.`
+        : "Hover or tap a square for a day.";
+      const dow = n => new Date(n * 864e5).getUTCDay();
+      const firstSun = calStart - dow(calStart);
+      const weeks = Math.floor((calEnd - firstSun) / 7) + 1;
+      const grid = $("div", { class: "cal", style: `grid-template-columns:26px repeat(${weeks},13px);grid-template-rows:14px repeat(7,13px)` });
+      grid.append($("div", { style: "grid-column:1;grid-row:1" }));
+      let prevMonth = -1;
+      for (let w = 0; w < weeks; w++) {
+        const m = new Date((firstSun + w * 7) * 864e5).getUTCMonth();
+        grid.append($("div", { class: "mlab", style: `grid-column:${w + 2};grid-row:1`, text: m !== prevMonth ? MONTHS[m] : "" }));
+        prevMonth = m;
+      }
+      ["Mon", "Wed", "Fri"].forEach((name, i) => {
+        grid.append($("div", { class: "wlab", style: `grid-column:1;grid-row:${[3, 5, 7][i]}`, text: name }));
+      });
+      for (let n = firstSun; n < firstSun + weeks * 7; n++) {
+        const w = Math.floor((n - firstSun) / 7);
+        const cell = $("div", { class: "cell", style: `grid-column:${w + 2};grid-row:${dow(n) + 2}` });
+        if (n >= calStart && n <= calEnd) {
+          const iso = n2d(n);
+          if (n > throughN) { cell.classList.add("future"); cell.title = `${fmtDay(iso)} — upcoming`; }
+          else {
+            const v = dayTot.get(iso) || { rec: 0, sup: hasCounts ? 0 : null };
+            cell.style.background = colorFor(v.rec);
+            cell.dataset.date = iso;
+            cell.title = `${fmtDay(iso)} — ${usd2.format(v.rec)} received${supText(v)}`;
+            cell.setAttribute("role", "img");
+            cell.setAttribute("aria-label", cell.title);
+          }
+        } else cell.classList.add("blank");
+        grid.append(cell);
+      }
+      const showDay = iso => {
+        const v = dayTot.get(iso) || { rec: 0, sup: null };
+        detail.innerHTML = `<b>${fmtDay(iso)}</b> — <b>${usd2.format(v.rec)}</b> received${supText(v)}`;
+      };
+      grid.addEventListener("pointerover", e => { const d = e.target.dataset && e.target.dataset.date; if (d) showDay(d); });
+      grid.addEventListener("click", e => { const d = e.target.dataset && e.target.dataset.date; if (d) showDay(d); });
+      const legend = $("div", { class: "scale", style: "margin-top:10px" },
+        document.createTextNode("Less "),
+        ...[0, 0.06, 0.25, 0.55, 1].map(f => $("i", { style: `background:${f === 0 ? "var(--cal-zero)" : `hsl(${Math.round(120 * f)} 62% ${Math.round(82 - 44 * f)}%)`}` })),
+        document.createTextNode(" More"),
+        maxV ? $("span", { style: "margin-left:10px", text: `Color scales to the biggest day so far: ${usd0.format(maxV)}` }) : null);
+      calCard.replaceChildren(
+        $("div", { class: "chart-head" }, $("div", {}, $("h2", { text: "Donation calendar" }),
+          $("div", { class: "sub", text: `Dollars received each day since ${fmtDay(D.season_start)}, red (low) to green (high). New squares fill in with each morning's sync.` }))),
+        $("div", { class: "cal-scroll" }, grid),
+        detail, legend);
+    }
+
     app.append($("footer", { text: `Team-level totals only. Pulled daily from the BEPOS Team Report (${D.eventtag}) using running totals from ${fmtDay(D.season_start)}, so days add up exactly to the BEPOS all-time figure.` }));
 
-    drawCum(); drawMon(); drawTeams();
-    let raf; window.addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { drawCum(); drawMon(); }); });
+    drawCum(); drawMon(); drawTeams(); drawCalendar();
+    let raf; window.addEventListener("resize", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { if (!panelOverview.hidden) { drawCum(); drawMon(); } }); });
   }
 })();
 </script>
